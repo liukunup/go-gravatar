@@ -1,8 +1,9 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -10,7 +11,7 @@ type User struct {
 	UserId    string `gorm:"unique;not null"`
 	Nickname  string `gorm:"not null"`
 	Password  string `gorm:"not null"`
-	Email     string `gorm:"not null"`
+	Email     string `gorm:"unique;not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
