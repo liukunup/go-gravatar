@@ -8,6 +8,7 @@ import (
 	"go-gravatar/internal/server"
 	"go-gravatar/pkg/app"
 	"go-gravatar/pkg/log"
+
 	"github.com/google/wire"
 	"github.com/spf13/viper"
 )
@@ -17,6 +18,7 @@ var repositorySet = wire.NewSet(
 	//repository.NewRedis,
 	repository.NewRepository,
 	repository.NewUserRepository,
+	repository.NewGravatarRepository,
 )
 var serverSet = wire.NewSet(
 	server.NewMigrateServer,

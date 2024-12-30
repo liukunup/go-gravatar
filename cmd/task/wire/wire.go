@@ -10,6 +10,7 @@ import (
 	"go-gravatar/pkg/app"
 	"go-gravatar/pkg/log"
 	"go-gravatar/pkg/sid"
+
 	"github.com/google/wire"
 	"github.com/spf13/viper"
 )
@@ -20,6 +21,7 @@ var repositorySet = wire.NewSet(
 	repository.NewRepository,
 	repository.NewTransaction,
 	repository.NewUserRepository,
+	repository.NewGravatarRepository,
 )
 
 var taskSet = wire.NewSet(
