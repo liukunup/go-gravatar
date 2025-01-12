@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/gin-gonic/gin"
 	apiV1 "go-gravatar/api/v1"
 	"go-gravatar/docs"
 	"go-gravatar/internal/handler"
@@ -9,6 +8,8 @@ import (
 	"go-gravatar/pkg/jwt"
 	"go-gravatar/pkg/log"
 	"go-gravatar/pkg/server/http"
+
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -19,6 +20,7 @@ func NewHTTPServer(
 	conf *viper.Viper,
 	jwt *jwt.JWT,
 	userHandler *handler.UserHandler,
+	avatarHandler *handler.AvatarHandler,
 ) *http.Server {
 	gin.SetMode(gin.DebugMode)
 	s := http.NewServer(
@@ -49,6 +51,8 @@ func NewHTTPServer(
 			":)": "Thank you for using nunu!",
 		})
 	})
+	//
+	s.GET("/avatar/:hash", avatarHandler.GetAvatar)
 
 	v1 := s.Group("/v1")
 	{

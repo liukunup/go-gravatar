@@ -9,5 +9,7 @@ var (
 	ErrInternalServerError = newError(500, "Internal Server Error")
 
 	// more biz errors
-	ErrEmailAlreadyUse = newError(1001, "The email is already in use.")
+	ErrUsernameAlreadyUse = newError(1001, "The username is already in use.")
+	ErrEmailAlreadyUse    = newError(1002, "The email is already in use.")
+	ErrEmailNotExists     = newError(1003, "The email does not exist.")
 )

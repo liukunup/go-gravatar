@@ -7,12 +7,12 @@
 package wire
 
 import (
+	"github.com/google/wire"
+	"github.com/spf13/viper"
 	"go-gravatar/internal/repository"
 	"go-gravatar/internal/server"
 	"go-gravatar/pkg/app"
 	"go-gravatar/pkg/log"
-	"github.com/google/wire"
-	"github.com/spf13/viper"
 )
 
 // Injectors from wire.go:
@@ -27,7 +27,7 @@ func NewWire(viperViper *viper.Viper, logger *log.Logger) (*app.App, func(), err
 
 // wire.go:
 
-var repositorySet = wire.NewSet(repository.NewDB, repository.NewRepository, repository.NewUserRepository)
+var repositorySet = wire.NewSet(repository.NewDB, repository.NewRepository, repository.NewUserRepository, repository.NewAvatarRepository)
 
 var serverSet = wire.NewSet(server.NewMigrateServer)
 

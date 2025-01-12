@@ -11,11 +11,13 @@ type Avatar struct {
 	Hash      string `gorm:"unique;not null"`
 	ImageData []byte `gorm:"type:mediumblob"`
 	ImageURL  string
+	ImageFile string
+	ObjectKey string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
 func (m *Avatar) TableName() string {
-	return "avatar"
+	return "avatars"
 }

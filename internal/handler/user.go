@@ -1,11 +1,12 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
-	"go-gravatar/api/v1"
+	v1 "go-gravatar/api/v1"
 	"go-gravatar/internal/service"
-	"go.uber.org/zap"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type UserHandler struct {
@@ -13,7 +14,10 @@ type UserHandler struct {
 	userService service.UserService
 }
 
-func NewUserHandler(handler *Handler, userService service.UserService) *UserHandler {
+func NewUserHandler(
+	handler *Handler,
+	userService service.UserService,
+) *UserHandler {
 	return &UserHandler{
 		Handler:     handler,
 		userService: userService,

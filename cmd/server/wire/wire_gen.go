@@ -7,6 +7,8 @@
 package wire
 
 import (
+	"github.com/google/wire"
+	"github.com/spf13/viper"
 	"go-gravatar/internal/handler"
 	"go-gravatar/internal/job"
 	"go-gravatar/internal/repository"
@@ -17,8 +19,6 @@ import (
 	"go-gravatar/pkg/log"
 	"go-gravatar/pkg/server/http"
 	"go-gravatar/pkg/sid"
-	"github.com/google/wire"
-	"github.com/spf13/viper"
 )
 
 // Injectors from wire.go:
@@ -34,7 +34,10 @@ func NewWire(viperViper *viper.Viper, logger *log.Logger) (*app.App, func(), err
 	userRepository := repository.NewUserRepository(repositoryRepository)
 	userService := service.NewUserService(serviceService, userRepository)
 	userHandler := handler.NewUserHandler(handlerHandler, userService)
-	httpServer := server.NewHTTPServer(logger, viperViper, jwtJWT, userHandler)
+	avatarRepository := repository.NewAvatarRepository(repositoryRepository)
+	avatarService := service.NewAvatarService(serviceService, avatarRepository)
+	avatarHandler := handler.NewAvatarHandler(handlerHandler, avatarService)
+	httpServer := server.NewHTTPServer(logger, viperViper, jwtJWT, userHandler, avatarHandler)
 	jobJob := job.NewJob(transaction, logger, sidSid)
 	userJob := job.NewUserJob(jobJob, userRepository)
 	jobServer := server.NewJobServer(logger, userJob)
@@ -45,11 +48,11 @@ func NewWire(viperViper *viper.Viper, logger *log.Logger) (*app.App, func(), err
 
 // wire.go:
 
-var repositorySet = wire.NewSet(repository.NewDB, repository.NewRepository, repository.NewTransaction, repository.NewUserRepository)
+var repositorySet = wire.NewSet(repository.NewDB, repository.NewRepository, repository.NewTransaction, repository.NewUserRepository, repository.NewAvatarRepository)
 
-var serviceSet = wire.NewSet(service.NewService, service.NewUserService)
+var serviceSet = wire.NewSet(service.NewService, service.NewUserService, service.NewAvatarService)
 
-var handlerSet = wire.NewSet(handler.NewHandler, handler.NewUserHandler)
+var handlerSet = wire.NewSet(handler.NewHandler, handler.NewUserHandler, handler.NewAvatarHandler)
 
 var jobSet = wire.NewSet(job.NewJob, job.NewUserJob)
 
