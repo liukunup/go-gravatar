@@ -6,13 +6,15 @@
 
 ### 1. 完全兼容`Gravatar`
 
-- [Gravatar](https://www.gravatar.com/)官网
+- [Gravatar](https://www.gravatar.com/) 官网
 
 目前暂时还不清楚完整功能，慢慢支持。
 
 ### 2. 完全兼容`Cravatar`
 
-- [Cravatar](https://cravatar.com/)官网
+- [Cravatar](https://cravatar.com/) 官网
+
+功能支持详见 [Cravatar 官方 API 文档](https://cravatar.com/developer/api)
 
 目前暂时还不清楚完整功能，慢慢支持。
 
