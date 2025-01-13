@@ -61,6 +61,7 @@ func NewHTTPServer(
 		{
 			noAuthRouter.POST("/register", userHandler.Register)
 			noAuthRouter.POST("/login", userHandler.Login)
+			noAuthRouter.POST("/reset", userHandler.Reset)
 		}
 		// Non-strict permission routing group
 		noStrictAuthRouter := v1.Group("/").Use(middleware.NoStrictAuth(jwt, logger))
@@ -72,6 +73,8 @@ func NewHTTPServer(
 		strictAuthRouter := v1.Group("/").Use(middleware.StrictAuth(jwt, logger))
 		{
 			strictAuthRouter.PUT("/user", userHandler.UpdateProfile)
+			strictAuthRouter.PUT("/avatar", avatarHandler.UpdateAvatar)
+			strictAuthRouter.DELETE("/avatar", avatarHandler.DeleteAvatar)
 		}
 	}
 

@@ -24,15 +24,25 @@ func NewAvatarHandler(
 	}
 }
 
+// GetAvatar godoc
+// @Summary 获取头像
+// @Schemes
+// @Description 获取头像
+// @Tags 用户模块
+// @Accept json
+// @Produce json
+// @Param request body v1.GetAvatarRequest true "params"
+// @Success 200 {object} v1.Response
+// @Router /avatar/:hash [get]
 func (h *AvatarHandler) GetAvatar(ctx *gin.Context) {
 
-	req := new(v1.GetAvatarRequest)
-	if err := ctx.ShouldBindUri(req); err != nil {
+	var req v1.GetAvatarRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
 	}
 
-	avatar, err := h.avatarService.GetAvatar(ctx, req)
+	avatar, err := h.avatarService.GetAvatar(ctx, &req)
 	if err != nil {
 		h.logger.WithContext(ctx).Error("avatarService.GetAvatar error", zap.Error(err))
 		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
@@ -42,21 +52,34 @@ func (h *AvatarHandler) GetAvatar(ctx *gin.Context) {
 	HandleDownload(ctx, avatar)
 }
 
-func (h *AvatarHandler) CreateOrUpdateAvatar(ctx *gin.Context) {
+// UpdateAvatar godoc
+// @Summary 修改头像
+// @Schemes
+// @Description 修改头像
+// @Tags 用户模块
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param request body v1.UpdateAvatarRequest true "params"
+// @Success 200 {object} v1.Response
+// @Router /avatar [put]
+func (h *AvatarHandler) UpdateAvatar(ctx *gin.Context) {
 
-	req := new(v1.CreateOrUpdateAvatarRequest)
-	if err := ctx.ShouldBindUri(req); err != nil {
-		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
+	userId := GetUserIdFromCtx(ctx)
+	if userId == "" {
+		v1.HandleError(ctx, http.StatusUnauthorized, v1.ErrUnauthorized, nil)
 		return
 	}
 
+	req := new(v1.UpdateAvatarRequest)
 	if err := HandleUpload(ctx, req); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
 	}
+	req.UserId = userId
 
-	if err := h.avatarService.CreateOrUpdateAvatar(ctx, req); err != nil {
-		h.logger.WithContext(ctx).Error("avatarService.CreateOrUpdateAvatar error", zap.Error(err))
+	if err := h.avatarService.UpdateAvatar(ctx, req); err != nil {
+		h.logger.WithContext(ctx).Error("avatarService.UpdateAvatar error", zap.Error(err))
 		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
@@ -64,7 +87,37 @@ func (h *AvatarHandler) CreateOrUpdateAvatar(ctx *gin.Context) {
 	v1.HandleSuccess(ctx, nil)
 }
 
-func HandleUpload(ctx *gin.Context, req *v1.CreateOrUpdateAvatarRequest) error {
+// DeleteAvatar godoc
+// @Summary 删除头像
+// @Schemes
+// @Description 删除头像
+// @Tags 用户模块
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param request body v1.DeleteAvatarRequest true "params"
+// @Success 200 {object} v1.Response
+// @Router /avatar [delete]
+func (h *AvatarHandler) DeleteAvatar(ctx *gin.Context) {
+
+	userId := GetUserIdFromCtx(ctx)
+	if userId == "" {
+		v1.HandleError(ctx, http.StatusUnauthorized, v1.ErrUnauthorized, nil)
+		return
+	}
+	req := new(v1.DeleteAvatarRequest)
+	req.UserId = userId
+
+	if err := h.avatarService.DeleteAvatar(ctx, req); err != nil {
+		h.logger.WithContext(ctx).Error("avatarService.DeleteAvatar error", zap.Error(err))
+		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
+		return
+	}
+
+	v1.HandleSuccess(ctx, nil)
+}
+
+func HandleUpload(ctx *gin.Context, req *v1.UpdateAvatarRequest) error {
 
 	fileHeader, err := ctx.FormFile("file")
 	if err != nil {

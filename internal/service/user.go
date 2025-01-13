@@ -12,7 +12,7 @@ import (
 
 type UserService interface {
 	Register(ctx context.Context, req *v1.RegisterRequest) error
-	ForgotPassword(ctx context.Context, req *v1.ForgotPasswordRequest) error
+	Reset(ctx context.Context, req *v1.ResetRequest) error
 	Login(ctx context.Context, req *v1.LoginRequest) (string, error)
 	GetProfile(ctx context.Context, userId string) (*v1.GetProfileResponseData, error)
 	UpdateProfile(ctx context.Context, userId string, req *v1.UpdateProfileRequest) error
@@ -75,7 +75,7 @@ func (s *userService) Register(ctx context.Context, req *v1.RegisterRequest) err
 	return err
 }
 
-func (s *userService) ForgotPassword(ctx context.Context, req *v1.ForgotPasswordRequest) error {
+func (s *userService) Reset(ctx context.Context, req *v1.ResetRequest) error {
 
 	// Check email
 	user, err := s.userRepository.GetByEmail(ctx, req.Email)
@@ -133,6 +133,7 @@ func (s *userService) GetProfile(ctx context.Context, userId string) (*v1.GetPro
 	}
 
 	return &v1.GetProfileResponseData{
+		UserId:   user.UserId,
 		Username: user.Username,
 		Nickname: user.Nickname,
 		Email:    user.Email,
