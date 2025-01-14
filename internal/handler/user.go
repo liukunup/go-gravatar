@@ -35,6 +35,7 @@ func NewUserHandler(
 // @Success 200 {object} v1.Response
 // @Router /register [post]
 func (h *UserHandler) Register(ctx *gin.Context) {
+
 	req := new(v1.RegisterRequest)
 	if err := ctx.ShouldBindJSON(req); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
@@ -61,6 +62,7 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 // @Success 200 {object} v1.Response
 // @Router /reset [post]
 func (h *UserHandler) Reset(ctx *gin.Context) {
+
 	req := new(v1.ResetRequest)
 	if err := ctx.ShouldBindJSON(req); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
@@ -87,6 +89,7 @@ func (h *UserHandler) Reset(ctx *gin.Context) {
 // @Success 200 {object} v1.LoginResponse
 // @Router /login [post]
 func (h *UserHandler) Login(ctx *gin.Context) {
+
 	var req v1.LoginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
@@ -95,6 +98,7 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 
 	token, err := h.userService.Login(ctx, &req)
 	if err != nil {
+		h.logger.WithContext(ctx).Error("userService.Login error", zap.Error(err))
 		v1.HandleError(ctx, http.StatusUnauthorized, v1.ErrUnauthorized, nil)
 		return
 	}
@@ -120,13 +124,13 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.GetProfile(ctx, userId)
+	profile, err := h.userService.GetProfile(ctx, userId)
 	if err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
 	}
 
-	v1.HandleSuccess(ctx, user)
+	v1.HandleSuccess(ctx, profile)
 }
 
 // UpdateProfile godoc
@@ -142,15 +146,44 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 // @Router /user [put]
 func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	userId := GetUserIdFromCtx(ctx)
+	if userId == "" {
+		v1.HandleError(ctx, http.StatusUnauthorized, v1.ErrUnauthorized, nil)
+		return
+	}
 
-	var req v1.UpdateProfileRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	req := new(v1.UpdateProfileRequest)
+	if err := ctx.ShouldBindJSON(req); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
 	}
 
-	if err := h.userService.UpdateProfile(ctx, userId, &req); err != nil {
-		v1.HandleError(ctx, http.StatusInternalServerError, v1.ErrInternalServerError, nil)
+	if err := h.userService.UpdateProfile(ctx, userId, req); err != nil {
+		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
+		return
+	}
+
+	v1.HandleSuccess(ctx, nil)
+}
+
+// Delete godoc
+// @Summary 删除用户
+// @Schemes
+// @Description 删除用户
+// @Tags 用户模块
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {object} v1.Response
+// @Router /user [delete]
+func (h *UserHandler) Delete(ctx *gin.Context) {
+	userId := GetUserIdFromCtx(ctx)
+	if userId == "" {
+		v1.HandleError(ctx, http.StatusUnauthorized, v1.ErrUnauthorized, nil)
+		return
+	}
+
+	if err := h.userService.Delete(ctx, userId); err != nil {
+		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
 		return
 	}
 

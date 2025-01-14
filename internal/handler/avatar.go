@@ -28,21 +28,20 @@ func NewAvatarHandler(
 // @Summary 获取头像
 // @Schemes
 // @Description 获取头像
-// @Tags 用户模块
-// @Accept json
-// @Produce json
-// @Param request body v1.GetAvatarRequest true "params"
-// @Success 200 {object} v1.Response
-// @Router /avatar/:hash [get]
+// @Tags 头像模块
+// @Produce image/jpeg, image/png, image/webp
+// @Param hash path string true "email hash"
+// @Success 200 {image} image/jpeg,image/png,image/webp "avatar"
+// @Router /avatar/{hash} [get]
 func (h *AvatarHandler) GetAvatar(ctx *gin.Context) {
 
-	var req v1.GetAvatarRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
+	req := new(v1.GetAvatarRequest)
+	if err := ctx.ShouldBindUri(req); err != nil {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
 	}
 
-	avatar, err := h.avatarService.GetAvatar(ctx, &req)
+	avatar, err := h.avatarService.GetAvatar(ctx, req)
 	if err != nil {
 		h.logger.WithContext(ctx).Error("avatarService.GetAvatar error", zap.Error(err))
 		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
@@ -56,11 +55,12 @@ func (h *AvatarHandler) GetAvatar(ctx *gin.Context) {
 // @Summary 修改头像
 // @Schemes
 // @Description 修改头像
-// @Tags 用户模块
-// @Accept json
+// @Tags 头像模块
+// @Accept multipart/form-data
 // @Produce json
 // @Security Bearer
-// @Param request body v1.UpdateAvatarRequest true "params"
+// @Param file formData file true "avatar"
+// @Param jsonData formData string true "image form other source"
 // @Success 200 {object} v1.Response
 // @Router /avatar [put]
 func (h *AvatarHandler) UpdateAvatar(ctx *gin.Context) {
@@ -76,9 +76,8 @@ func (h *AvatarHandler) UpdateAvatar(ctx *gin.Context) {
 		v1.HandleError(ctx, http.StatusBadRequest, v1.ErrBadRequest, nil)
 		return
 	}
-	req.UserId = userId
 
-	if err := h.avatarService.UpdateAvatar(ctx, req); err != nil {
+	if err := h.avatarService.UpdateAvatar(ctx, userId, req); err != nil {
 		h.logger.WithContext(ctx).Error("avatarService.UpdateAvatar error", zap.Error(err))
 		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
 		return
@@ -91,11 +90,9 @@ func (h *AvatarHandler) UpdateAvatar(ctx *gin.Context) {
 // @Summary 删除头像
 // @Schemes
 // @Description 删除头像
-// @Tags 用户模块
-// @Accept json
+// @Tags 头像模块
 // @Produce json
 // @Security Bearer
-// @Param request body v1.DeleteAvatarRequest true "params"
 // @Success 200 {object} v1.Response
 // @Router /avatar [delete]
 func (h *AvatarHandler) DeleteAvatar(ctx *gin.Context) {
@@ -105,10 +102,8 @@ func (h *AvatarHandler) DeleteAvatar(ctx *gin.Context) {
 		v1.HandleError(ctx, http.StatusUnauthorized, v1.ErrUnauthorized, nil)
 		return
 	}
-	req := new(v1.DeleteAvatarRequest)
-	req.UserId = userId
 
-	if err := h.avatarService.DeleteAvatar(ctx, req); err != nil {
+	if err := h.avatarService.DeleteAvatar(ctx, userId); err != nil {
 		h.logger.WithContext(ctx).Error("avatarService.DeleteAvatar error", zap.Error(err))
 		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
 		return

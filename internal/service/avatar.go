@@ -12,8 +12,8 @@ import (
 
 type AvatarService interface {
 	GetAvatar(ctx context.Context, req *v1.GetAvatarRequest) (*v1.GetAvatarResponseData, error)
-	UpdateAvatar(ctx context.Context, req *v1.UpdateAvatarRequest) error
-	DeleteAvatar(ctx context.Context, req *v1.DeleteAvatarRequest) error
+	UpdateAvatar(ctx context.Context, userId string, req *v1.UpdateAvatarRequest) error
+	DeleteAvatar(ctx context.Context, userId string) error
 }
 
 func NewAvatarService(
@@ -49,9 +49,9 @@ func (s *avatarService) GetAvatar(ctx context.Context, req *v1.GetAvatarRequest)
 	}, nil
 }
 
-func (s *avatarService) UpdateAvatar(ctx context.Context, req *v1.UpdateAvatarRequest) error {
+func (s *avatarService) UpdateAvatar(ctx context.Context, userId string, req *v1.UpdateAvatarRequest) error {
 
-	user, err := s.userRepository.GetByID(ctx, req.UserId)
+	user, err := s.userRepository.GetByID(ctx, userId)
 	if err != nil {
 		return err
 	}
@@ -100,9 +100,9 @@ func (s *avatarService) UpdateAvatar(ctx context.Context, req *v1.UpdateAvatarRe
 	return nil
 }
 
-func (s *avatarService) DeleteAvatar(ctx context.Context, req *v1.DeleteAvatarRequest) error {
+func (s *avatarService) DeleteAvatar(ctx context.Context, userId string) error {
 
-	user, err := s.userRepository.GetByID(ctx, req.UserId)
+	user, err := s.userRepository.GetByID(ctx, userId)
 	if err != nil {
 		return err
 	}

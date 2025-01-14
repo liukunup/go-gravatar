@@ -5,6 +5,7 @@ import (
 	v1 "go-gravatar/api/v1"
 	"go-gravatar/internal/model"
 	"go-gravatar/internal/repository"
+	"regexp"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -16,6 +17,7 @@ type UserService interface {
 	Login(ctx context.Context, req *v1.LoginRequest) (string, error)
 	GetProfile(ctx context.Context, userId string) (*v1.GetProfileResponseData, error)
 	UpdateProfile(ctx context.Context, userId string, req *v1.UpdateProfileRequest) error
+	Delete(ctx context.Context, userId string) error
 }
 
 func NewUserService(
@@ -37,7 +39,7 @@ func (s *userService) Register(ctx context.Context, req *v1.RegisterRequest) err
 
 	// Check email
 	user, err := s.userRepository.GetByEmail(ctx, req.Email)
-	if err != nil {
+	if err != nil && err != v1.ErrNotFound {
 		return v1.ErrInternalServerError
 	}
 	if err == nil && user != nil {
@@ -55,24 +57,26 @@ func (s *userService) Register(ctx context.Context, req *v1.RegisterRequest) err
 	if err != nil {
 		return err
 	}
+	// Extract username from email
+	re := regexp.MustCompile(`^[^@]+`)
+	username := re.FindString(req.Email)
 	user = &model.User{
 		UserId:   userId,
+		Username: username,
 		Email:    req.Email,
 		Password: string(hashedPassword),
 	}
 
-	// Create user
-	err = s.tm.Transaction(ctx, func(ctx context.Context) error {
-		// Create a user
-		if err = s.userRepository.Create(ctx, user); err != nil {
+	err_t := s.tm.Transaction(ctx, func(ctx context.Context) error {
+		if err := s.userRepository.Create(ctx, user); err != nil {
 			return err
 		}
 
-		// TODO: send activation email
+		// TODO: send account activation email
 
 		return nil
 	})
-	return err
+	return err_t
 }
 
 func (s *userService) Reset(ctx context.Context, req *v1.ResetRequest) error {
@@ -95,13 +99,13 @@ func (s *userService) Login(ctx context.Context, req *v1.LoginRequest) (string, 
 
 	// Check email
 	user, err := s.userRepository.GetByEmail(ctx, req.Username)
-	if err != nil {
+	if err != nil && err != v1.ErrNotFound {
 		return "", v1.ErrInternalServerError
 	}
 	if user == nil {
 		// Check username
 		user, err = s.userRepository.GetByUsername(ctx, req.Username)
-		if err != nil {
+		if err != nil && err != v1.ErrNotFound {
 			return "", v1.ErrInternalServerError
 		}
 		if user == nil {
@@ -116,7 +120,7 @@ func (s *userService) Login(ctx context.Context, req *v1.LoginRequest) (string, 
 	}
 
 	// Generate token
-	token, err := s.jwt.GenToken(user.Username, time.Now().Add(time.Hour*24*90))
+	token, err := s.jwt.GenToken(user.UserId, time.Now().Add(time.Hour*24*90))
 	if err != nil {
 		return "", err
 	}
@@ -126,7 +130,6 @@ func (s *userService) Login(ctx context.Context, req *v1.LoginRequest) (string, 
 
 func (s *userService) GetProfile(ctx context.Context, userId string) (*v1.GetProfileResponseData, error) {
 
-	// Get user
 	user, err := s.userRepository.GetByID(ctx, userId)
 	if err != nil {
 		return nil, err
@@ -142,7 +145,6 @@ func (s *userService) GetProfile(ctx context.Context, userId string) (*v1.GetPro
 
 func (s *userService) UpdateProfile(ctx context.Context, userId string, req *v1.UpdateProfileRequest) error {
 
-	// Get user
 	user, err := s.userRepository.GetByID(ctx, userId)
 	if err != nil {
 		return err
@@ -179,9 +181,21 @@ func (s *userService) UpdateProfile(ctx context.Context, userId string, req *v1.
 		user.Email = req.Email
 	}
 
-	if err = s.userRepository.Update(ctx, user); err != nil {
-		return err
-	}
+	err_t := s.tm.Transaction(ctx, func(ctx context.Context) error {
+		if err := s.userRepository.Update(ctx, user); err != nil {
+			return err
+		}
+		return nil
+	})
+	return err_t
+}
 
-	return nil
+func (s *userService) Delete(ctx context.Context, userId string) error {
+	err_t := s.tm.Transaction(ctx, func(ctx context.Context) error {
+		if err := s.userRepository.Delete(ctx, userId); err != nil {
+			return err
+		}
+		return nil
+	})
+	return err_t
 }

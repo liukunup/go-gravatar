@@ -73,6 +73,7 @@ func NewHTTPServer(
 		strictAuthRouter := v1.Group("/").Use(middleware.StrictAuth(jwt, logger))
 		{
 			strictAuthRouter.PUT("/user", userHandler.UpdateProfile)
+			strictAuthRouter.DELETE("/user", userHandler.Delete)
 			strictAuthRouter.PUT("/avatar", avatarHandler.UpdateAvatar)
 			strictAuthRouter.DELETE("/avatar", avatarHandler.DeleteAvatar)
 		}
