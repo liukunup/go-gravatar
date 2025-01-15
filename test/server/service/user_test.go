@@ -7,7 +7,7 @@ import (
 	"fmt"
 	v1 "go-gravatar/api/v1"
 	"go-gravatar/pkg/jwt"
-	"go-gravatar/test/mocks/repository"
+	mock_repository "go-gravatar/test/mocks/repository"
 	"os"
 	"testing"
 
@@ -16,6 +16,7 @@ import (
 	"go-gravatar/pkg/config"
 	"go-gravatar/pkg/log"
 	"go-gravatar/pkg/sid"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
@@ -106,7 +107,7 @@ func TestUserService_Login(t *testing.T) {
 
 	ctx := context.Background()
 	req := &v1.LoginRequest{
-		Email:    "xxx@gmail.com",
+		Username: "xxx@gmail.com",
 		Password: "password",
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -114,7 +115,7 @@ func TestUserService_Login(t *testing.T) {
 		t.Error("failed to hash password")
 	}
 
-	mockUserRepo.EXPECT().GetByEmail(ctx, req.Email).Return(&model.User{
+	mockUserRepo.EXPECT().GetByEmail(ctx, req.Username).Return(&model.User{
 		Password: string(hashedPassword),
 	}, nil)
 
@@ -135,11 +136,11 @@ func TestUserService_Login_UserNotFound(t *testing.T) {
 
 	ctx := context.Background()
 	req := &v1.LoginRequest{
-		Email:    "xxx@gmail.com",
+		Username: "xxx@gmail.com",
 		Password: "password",
 	}
 
-	mockUserRepo.EXPECT().GetByEmail(ctx, req.Email).Return(nil, errors.New("user not found"))
+	mockUserRepo.EXPECT().GetByEmail(ctx, req.Username).Return(nil, errors.New("user not found"))
 
 	_, err := userService.Login(ctx, req)
 
@@ -181,6 +182,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 	ctx := context.Background()
 	userId := "123"
 	req := &v1.UpdateProfileRequest{
+		Username: "testuser",
 		Nickname: "testuser",
 		Email:    "test@example.com",
 	}
@@ -208,6 +210,7 @@ func TestUserService_UpdateProfile_UserNotFound(t *testing.T) {
 	ctx := context.Background()
 	userId := "123"
 	req := &v1.UpdateProfileRequest{
+		Username: "test",
 		Nickname: "testuser",
 		Email:    "test@example.com",
 	}

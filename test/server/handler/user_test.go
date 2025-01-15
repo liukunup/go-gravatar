@@ -4,7 +4,7 @@ import (
 	v1 "go-gravatar/api/v1"
 	"go-gravatar/internal/handler"
 	"go-gravatar/internal/middleware"
-	"go-gravatar/test/mocks/service"
+	mock_service "go-gravatar/test/mocks/service"
 	"net/http"
 	"testing"
 
@@ -16,8 +16,8 @@ func TestUserHandler_Register(t *testing.T) {
 	defer ctrl.Finish()
 
 	params := v1.RegisterRequest{
-		Password: "123456",
 		Email:    "xxx@gmail.com",
+		Password: "123456",
 	}
 
 	mockUserService := mock_service.NewMockUserService(ctrl)
@@ -43,7 +43,7 @@ func TestUserHandler_Login(t *testing.T) {
 	defer ctrl.Finish()
 
 	params := v1.LoginRequest{
-		Email:    "xxx@gmail.com",
+		Username: "xxx@gmail.com",
 		Password: "123456",
 	}
 

@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
 	"go-gravatar/internal/model"
 	"go-gravatar/internal/repository"
+
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -46,6 +47,7 @@ func TestUserRepository_Create(t *testing.T) {
 		Id:        1,
 		UserId:    "123",
 		Nickname:  "Test",
+		Username:  "test",
 		Password:  "password",
 		Email:     "test@example.com",
 		CreatedAt: time.Now(),
@@ -54,7 +56,7 @@ func TestUserRepository_Create(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec("INSERT INTO `users`").
-		WithArgs(user.UserId, user.Nickname, user.Password, user.Email, user.CreatedAt, user.UpdatedAt, user.DeletedAt, user.Id).
+		WithArgs(user.UserId, user.Nickname, user.Username, user.Password, user.Email, user.CreatedAt, user.UpdatedAt, user.DeletedAt, user.Id).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -72,6 +74,7 @@ func TestUserRepository_Update(t *testing.T) {
 		Id:        1,
 		UserId:    "123",
 		Nickname:  "Test",
+		Username:  "test",
 		Password:  "password",
 		Email:     "test@example.com",
 		CreatedAt: time.Now(),

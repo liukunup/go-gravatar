@@ -6,9 +6,9 @@ package mock_service
 
 import (
 	context "context"
+	v1 "go-gravatar/api/v1"
 	reflect "reflect"
 
-	v1 "go-gravatar/api/v1"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -33,6 +33,20 @@ func NewMockUserService(ctrl *gomock.Controller) *MockUserService {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockUserService) Delete(ctx context.Context, userId string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, userId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockUserServiceMockRecorder) Delete(ctx, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserService)(nil).Delete), ctx, userId)
 }
 
 // GetProfile mocks base method.
@@ -77,6 +91,20 @@ func (m *MockUserService) Register(ctx context.Context, req *v1.RegisterRequest)
 func (mr *MockUserServiceMockRecorder) Register(ctx, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockUserService)(nil).Register), ctx, req)
+}
+
+// Reset mocks base method.
+func (m *MockUserService) Reset(ctx context.Context, req *v1.ResetRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Reset", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Reset indicates an expected call of Reset.
+func (mr *MockUserServiceMockRecorder) Reset(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reset", reflect.TypeOf((*MockUserService)(nil).Reset), ctx, req)
 }
 
 // UpdateProfile mocks base method.
