@@ -29,10 +29,10 @@ func NewAvatarHandler(
 // @Schemes
 // @Description 获取头像
 // @Tags 头像模块
-// @Produce image/jpeg, image/png, image/webp
+// @Produce image/jpeg, image/png, image/webp, image/gif
 // @Param hash path string true "email hash"
-// @Success 200 {image} image/jpeg,image/png,image/webp "avatar"
-// @Router /avatar/{hash} [get]
+// @Success 200 {image} image/jpeg,image/png,image/webp,image/gif "avatar"
+// @Router /avatar/:hash [get]
 func (h *AvatarHandler) GetAvatar(ctx *gin.Context) {
 
 	req := new(v1.GetAvatarRequest)
@@ -60,7 +60,6 @@ func (h *AvatarHandler) GetAvatar(ctx *gin.Context) {
 // @Produce json
 // @Security Bearer
 // @Param file formData file true "avatar"
-// @Param jsonData formData string true "image form other source"
 // @Success 200 {object} v1.Response
 // @Router /avatar [put]
 func (h *AvatarHandler) UpdateAvatar(ctx *gin.Context) {
