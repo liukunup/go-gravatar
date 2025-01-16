@@ -182,16 +182,24 @@ func TestUserService_UpdateProfile(t *testing.T) {
 	ctx := context.Background()
 	userId := "123"
 	req := &v1.UpdateProfileRequest{
-		Username: "testuser",
-		Nickname: "testuser",
+		Username: "testuser_1",
+		Nickname: "testuser_2",
 		Email:    "test@example.com",
 	}
 
 	mockUserRepo.EXPECT().GetByID(ctx, userId).Return(&model.User{
-		UserId: userId,
-		Email:  "old@example.com",
+		UserId:   userId,
+		Username: "old_user_1",
+		Nickname: "old_user_2",
+		Email:    "old@example.com",
 	}, nil)
+	mockUserRepo.EXPECT().GetByUsername(ctx, req.Username).Return(nil, v1.ErrNotFound)
+	mockUserRepo.EXPECT().GetByEmail(ctx, req.Email).Return(nil, v1.ErrNotFound)
 	mockUserRepo.EXPECT().Update(ctx, gomock.Any()).Return(nil)
+	mockTm.EXPECT().Transaction(ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, fn func(context.Context) error) error {
+			return fn(ctx)
+		}).Return(nil)
 
 	err := userService.UpdateProfile(ctx, userId, req)
 
