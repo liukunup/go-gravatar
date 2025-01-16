@@ -153,7 +153,7 @@ func (s *userService) UpdateProfile(ctx context.Context, userId string, req *v1.
 	// Check username
 	if req.Username != "" && req.Username != user.Username {
 		existingUser, err := s.userRepository.GetByUsername(ctx, req.Username)
-		if err != nil {
+		if err != nil && err != v1.ErrNotFound {
 			return err
 		}
 		if existingUser != nil {
@@ -171,7 +171,7 @@ func (s *userService) UpdateProfile(ctx context.Context, userId string, req *v1.
 	// Check email
 	if req.Email != "" && req.Email != user.Email {
 		existingUser, err := s.userRepository.GetByEmail(ctx, req.Email)
-		if err != nil {
+		if err != nil && err != v1.ErrNotFound {
 			return err
 		}
 		if existingUser != nil {
