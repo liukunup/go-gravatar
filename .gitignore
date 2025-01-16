@@ -1,6 +1,9 @@
 storage/logs
+storage/nunu-test.db
 .idea
 *.log
 deploy/docker-compose/conf
 deploy/docker-compose/data
 images
+coverage.html
+coverage.out
