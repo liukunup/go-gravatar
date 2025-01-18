@@ -75,7 +75,7 @@ jobs:
         run: go tool cover -html=./coverage.out -o coverage.html
 
   deploy:
-    name: Deploy 
+    name: Deploy
     runs-on: ubuntu-24.04
     needs: test
     steps:
