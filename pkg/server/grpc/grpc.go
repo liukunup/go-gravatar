@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"go-gravatar/pkg/log"
-	"google.golang.org/grpc"
 	"net"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 type Server struct {
@@ -51,7 +52,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 }
 func (s *Server) Stop(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second) //nolint:golint,ineffassign
 	defer cancel()
 	s.Server.GracefulStop()
 

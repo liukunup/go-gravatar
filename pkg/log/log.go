@@ -98,7 +98,7 @@ func (l *Logger) WithValue(ctx context.Context, fields ...zapcore.Field) context
 		c.Request = c.Request.WithContext(context.WithValue(ctx, ctxLoggerKey, l.WithContext(ctx).With(fields...))) //nolint:golint,staticcheck
 		return c
 	}
-	return context.WithValue(ctx, ctxLoggerKey, l.WithContext(ctx).With(fields...))
+	return context.WithValue(ctx, ctxLoggerKey, l.WithContext(ctx).With(fields...)) //nolint:golint,staticcheck
 }
 
 // WithContext Returns a zap instance from the specified context
