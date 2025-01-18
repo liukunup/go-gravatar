@@ -52,7 +52,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 }
 func (s *Server) Stop(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second) //nolint:golint,ineffassign
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second) //nolint:golint,ineffassign,staticcheck
 	defer cancel()
 	s.Server.GracefulStop()
 
