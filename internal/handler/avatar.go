@@ -150,6 +150,7 @@ func HandleDownload(ctx *gin.Context, avatar *v1.GetAvatarResponseData) {
 		return
 	}
 
+	//nolint:golint,staticcheck
 	if avatar.ObjectKey != "" {
 		// 从对象存储下载
 	}

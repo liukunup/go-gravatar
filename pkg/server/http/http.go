@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"go-gravatar/pkg/log"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
@@ -52,12 +53,13 @@ func (s *Server) Start(ctx context.Context) error {
 
 	return nil
 }
-func (s *Server) Stop(ctx context.Context) error {
+
+func (s *Server) Stop(ctx context.Context) error { //nolint:golint,staticcheck
 	s.logger.Sugar().Info("Shutting down server...")
 
 	// The context is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) //nolint:golint,staticcheck
 	defer cancel()
 	if err := s.httpSrv.Shutdown(ctx); err != nil {
 		s.logger.Sugar().Fatal("Server forced to shutdown: ", err)

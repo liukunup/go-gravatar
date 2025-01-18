@@ -10,7 +10,7 @@ import (
 type Job struct {
 	logger *log.Logger
 	sid    *sid.Sid
-	jwt    *jwt.JWT
+	jwt    *jwt.JWT //nolint:golint,unused
 	tm     repository.Transaction
 }
 

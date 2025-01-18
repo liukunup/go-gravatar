@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/gavv/httpexpect/v2"
-	"github.com/gin-gonic/gin"
 	"go-gravatar/internal/handler"
 	"go-gravatar/internal/middleware"
 	"go-gravatar/pkg/config"
@@ -17,6 +15,9 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/gavv/httpexpect/v2"
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -60,6 +61,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+//nolint:golint,unused
 func performRequest(r http.Handler, method, path string, body *bytes.Buffer) *httptest.ResponseRecorder {
 	req, _ := http.NewRequest(method, path, body)
 	resp := httptest.NewRecorder()

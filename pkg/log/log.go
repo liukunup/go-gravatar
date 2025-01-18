@@ -2,13 +2,14 @@ package log
 
 import (
 	"context"
+	"os"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"os"
-	"time"
 )
 
 const ctxLoggerKey = "zapLogger"
@@ -94,7 +95,7 @@ func timeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 func (l *Logger) WithValue(ctx context.Context, fields ...zapcore.Field) context.Context {
 	if c, ok := ctx.(*gin.Context); ok {
 		ctx = c.Request.Context()
-		c.Request = c.Request.WithContext(context.WithValue(ctx, ctxLoggerKey, l.WithContext(ctx).With(fields...)))
+		c.Request = c.Request.WithContext(context.WithValue(ctx, ctxLoggerKey, l.WithContext(ctx).With(fields...))) //nolint:golint,staticcheck
 		return c
 	}
 	return context.WithValue(ctx, ctxLoggerKey, l.WithContext(ctx).With(fields...))
