@@ -4,12 +4,11 @@ on:
   push:
     branches:
       - main
+      - beta
+      - dev
     tags:
       - 'v*.*.*'
   pull_request:
-    branches:
-      - beta
-      - dev
 
 permissions:
   contents: read
