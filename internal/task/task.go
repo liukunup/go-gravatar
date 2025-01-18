@@ -10,7 +10,7 @@ import (
 type Task struct {
 	logger *log.Logger
 	sid    *sid.Sid
-	jwt    *jwt.JWT
+	jwt    *jwt.JWT //nolint:unused
 	tm     repository.Transaction
 }
 
