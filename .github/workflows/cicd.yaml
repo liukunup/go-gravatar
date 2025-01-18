@@ -2,15 +2,22 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: 
+    branches:
       - main
-      - master
+    tags:
+      - 'v*.*.*'
   pull_request:
+    branches:
+      - beta
+      - dev
 
 permissions:
   contents: read
   # Optional: allow read access to pull request. Use with `only-new-issues` option.
   # pull-requests: read
+
+env:
+  DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/go-gravatar
 
 jobs:
 
@@ -18,11 +25,14 @@ jobs:
     name: Lint Code
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
           go-version: stable
-      - name: Run Lint
+
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.60
@@ -32,25 +42,34 @@ jobs:
     runs-on: ubuntu-24.04
     needs: lint
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
           go-version: stable
-      - name: Build Project
-        run: go build -ldflags="-s -w" -o ./bin/server ./cmd/server
+
+      - name: Build project
+        run: |
+          go build -ldflags="-s -w" -o ./bin/server ./cmd/server
+          go build -ldflags="-s -w" -o ./bin/migrate ./cmd/migration
+          go build -ldflags="-s -w" -o ./bin/task ./cmd/task
 
   test:
-    name: Run Tests
+    name: Test & Coverage
     runs-on: ubuntu-24.04
     needs: build
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
           go-version: stable
+
       - name: Run Tests
         run: go test -coverpkg=./internal/handler,./internal/service,./internal/repository -coverprofile=./coverage.out ./test/server/...
-      - name: Gen Coverage Report
+      - name: Generate Coverage Report
         run: go tool cover -html=./coverage.out -o coverage.html
 
   deploy:
@@ -58,17 +77,59 @@ jobs:
     runs-on: ubuntu-24.04
     needs: test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
           go-version: stable
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKER_HUB_REPO }}
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{major}}.{{minor}}.{{patch}},enable=${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+            type=branch,branch=beta,format=beta-{{short}}
+            type=branch,branch=dev,format=dev-{{short}}
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
+          file: deploy/build/Dockerfile
           push: true
-          tags: yourdockerhubusername/your-repo-name:latest
-        env:
-          DOCKER_BUILDKIT: 1
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_RELATIVE_PATH=./cmd/task
+
+      - name: Update Docker Hub Repository Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.DOCKER_HUB_REPO }}
