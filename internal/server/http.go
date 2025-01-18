@@ -45,12 +45,21 @@ func NewHTTPServer(
 		middleware.RequestLogMiddleware(logger),
 		//middleware.SignMiddleware(log),
 	)
+
+	// health check
 	s.GET("/", func(ctx *gin.Context) {
-		logger.WithContext(ctx).Info("hello")
+		logger.WithContext(ctx).Debug("[/] alive")
 		apiV1.HandleSuccess(ctx, map[string]interface{}{
-			":)": "Thank you for using nunu!",
+			"healthStatus": "alive",
 		})
 	})
+	s.GET("/health", func(ctx *gin.Context) {
+		logger.WithContext(ctx).Debug("[/health] alive")
+		apiV1.HandleSuccess(ctx, map[string]interface{}{
+			"healthStatus": "alive",
+		})
+	})
+
 	//
 	s.GET("/avatar/:hash", avatarHandler.GetAvatar)
 
