@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 env:
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/go-gravatar
